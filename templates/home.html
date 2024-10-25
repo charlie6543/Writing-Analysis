@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Writing Analysis Editing Helper</title>
+        <script type="text/javascript" src="../static/main.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<style>
+    body {
+        background-color: rgb(240, 241, 245);
+    }
+    .editor {
+        background-color: white;
+        height: 500px;
+        width: 400px;
+        padding: 50px;
+        padding-top: 75px;
+        border-radius: 3px;
+    }
+    .header {
+        background-color: white;
+        padding: 20px;
+        padding-left: 10px;
+        border-radius: 3px;
+    }
+    .editContent {
+        padding: 50px;
+        padding-left: 60px;
+    }
+    .options {
+        background-color: rgb(243, 246, 252);
+        padding: 10px;
+        padding-left: 15px;
+        border-radius: 3px;
+    }
+    .option {
+        padding: 5px;
+        text-decoration: none;
+        color:black;
+    }
+</style>
+<body>
+    <div class="header">
+        <p style="font-family:Helvetica;">Writing Analysis Editing Helper</p>
+        <div class="options">
+            <select id="fontSize" onclick="changeSize()">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+            </select>
+            <a href="javascript:void(0)" onclick="format('bold')" class="option">
+                <span class="fa fa-bold fa-fw"><b>B</b></span>
+            </a>
+            <a href="javascript:void(0)" onclick="format('italic')" class="option">
+                <span class="fa fa-italic fa-fw"><i>I</i></span>
+            </a>
+            <a href="javascript:void(0)" onclick="format('underline')" class="option">
+                <span class="fa fa-underline fa-fw">U</span>
+            </a>
+            <a href="javascript:void(0)" onclick="format('insertunorderedlist')" class="option">
+                <span class="fa fa-list fa-fw">uL</span>
+            </a>
+            <a href="javascript:void(0)" onclick="format('insertOrderedList')" class="option">
+                <span class="fa fa-list-ol fa-fw">oL</span>
+            </a>
+
+
+        </div>
+        
+        
+
+    </div>
+
+    <div class="editContent">
+        <div class="editor" contenteditable="true" id="editor"></div>
+    </div>
+    <button onclick="sendData()">Send Data</button>
+    <div id="output"></div>
+    <script>
+        function sendData() {
+            var value = document.getElementById('editor').innerHTML;
+            $.ajax({
+                url: '/process',
+                type: 'POST',
+                data: { 'data': value },
+                success: function(response) {
+                    document.getElementById('output').innerHTML = response;
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
+        }
+    </script>
+
+</body>
+</html>
