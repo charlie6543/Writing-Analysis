@@ -6,11 +6,17 @@
         <title>Writing Analysis Editing Helper</title>
         <script type="text/javascript" src="../static/main.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
 
 </head>
 <style>
     body {
         background-color: rgb(240, 241, 245);
+    }
+    section {
+        display: -webkit-flex;
+        display: flex;
+        flex-direction: row;
     }
     .editor {
         background-color: white;
@@ -29,6 +35,11 @@
     .editContent {
         padding: 50px;
         padding-left: 60px;
+        flex: 1;
+    }
+    .graphs{
+        padding: 50px;
+        flex: 3;
     }
     .options {
         background-color: rgb(243, 246, 252);
@@ -79,9 +90,14 @@
 
     </div>
 
-    <div class="editContent">
-        <div class="editor" contenteditable="true" id="editor"></div>
-    </div>
+    <section>
+        <div class="editContent">
+            <div class="editor" contenteditable="true" id="editor"></div>
+        </div>
+        <div class="graphs">
+            <canvas id="sentenceChart" style="width:200%; background-color:white;"></canvas>
+        </div>
+    </section>
     <button onclick="sendData()">Send Data</button>
     <div id="output"></div>
     <script>
@@ -99,6 +115,26 @@
                 }
             });
         }
+        /*var body = document.getElementById('editor');
+        var bodyText = body.innerText;*/
+        
+        new Chart("sentenceChart", {
+            type: "bar",
+            data: {
+                labels: ["1", "2", "3", "4", "5"],
+                datasets: [{
+                    // backgroundColor:
+                    data: [2, 3, 4, 1, 5]
+                }]
+            },
+            options: {
+                legend: {display: false},
+                title: {
+                    display: true,
+                    text: "Sentence Lengths"
+                }
+            }
+        });
     </script>
 
 </body>
