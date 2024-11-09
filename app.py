@@ -1,16 +1,17 @@
 import os
 
 from flask import Flask, request, redirect, url_for, render_template, json
+from document import Document
 
 app = Flask(__name__)
 
 @app.route("/", methods=["POST", "GET"])
 def init_interface():
-  print('hi')
   return render_template('home.html')
 
 @app.route('/process', methods=['POST'])
 def process():
   data = request.form.get('data')
-  print(data)
+  # TODO FORMATTING FOR HTML: COPY PASTE SUPPORT
+  doc = Document(str(data))
   return str(data)
