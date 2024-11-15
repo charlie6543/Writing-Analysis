@@ -6,7 +6,6 @@ class Sentence:
         self.sent = sent
         self.wordNum = sent.count(' ') + 1
         # todo account for additional spaces and such
-        print(sent + ": " + str(self.wordNum))
         temp = re.split(r"[;,:-]", self.sent)
         # todo account for "" and ()
         self.frags = []
