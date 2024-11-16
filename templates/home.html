@@ -6,7 +6,7 @@
         <title>Writing Analysis Editing Helper</title>
         <script type="text/javascript" src="../static/main.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
 
 </head>
 <style>
@@ -92,7 +92,7 @@
 
     <section>
         <div class="editContent">
-            <div class="editor" contenteditable="true" id="editor"></div>
+            <div class="editor" contenteditable="true" id="editor" onkeydown="sendData()"></div>
         </div>
         <div class="graphs">
             <canvas id="sentenceChart" style="width:200%; background-color:white;"></canvas>
@@ -101,6 +101,20 @@
     <button onclick="sendData()">Send Data</button>
     <div id="output"></div>
     <script>
+        const labels = [];
+        const datasets = [];
+        const sentChart = new Chart("sentenceChart", {
+            type: "bar",
+            data: {
+                labels: labels,
+                datasets: [{
+                    // backgroundColor:
+                    label: 'Sentence Lengths',
+                    data: datasets
+                }]
+            },
+        });
+
         function sendData() {
             var value = document.getElementById('editor').innerHTML;
             $.ajax({
@@ -108,7 +122,10 @@
                 type: 'POST',
                 data: { 'data': value },
                 success: function(response) {
+                    
+                    console.log("senddata updating");
                     document.getElementById('output').innerHTML = response;
+                    updateChart(response)
                 },
                 error: function(error) {
                     console.log(error);
@@ -117,24 +134,14 @@
         }
         /*var body = document.getElementById('editor');
         var bodyText = body.innerText;*/
+
+        function updateChart(data){
+            console.log("chart updating");
+            sentChart.data.labels = data;
+            sentChart.data.datasets.forEach((dataset) => {dataset.data = data});
+            sentChart.update();
+        }
         
-        new Chart("sentenceChart", {
-            type: "bar",
-            data: {
-                labels: ["1", "2", "3", "4", "5"],
-                datasets: [{
-                    // backgroundColor:
-                    data: [2, 3, 4, 1, 5]
-                }]
-            },
-            options: {
-                legend: {display: false},
-                title: {
-                    display: true,
-                    text: "Sentence Lengths"
-                }
-            }
-        });
     </script>
 
 </body>

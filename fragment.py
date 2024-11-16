@@ -8,7 +8,6 @@ class Fragment:
         self.words = []
         for i in temp:
             self.words.append(Word(i))
-        print(fragment + ": " + str(self.wordNum))
         
     def __str__(self):
         return self.fragment
