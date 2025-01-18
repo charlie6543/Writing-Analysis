@@ -1,7 +1,8 @@
 from word import Word
 
 class Fragment:
-    def __init__(self, fragment):
+    def __init__(self, fragment, separator):
+        self.separator = separator
         self.fragment = fragment
         temp = fragment.split()
         self.wordNum = len(temp)

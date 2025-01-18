@@ -20,3 +20,14 @@ class Document:
         for i in self.sentences:
             wordCounts.append(i.wordNum)
         return wordCounts
+        #return self.sentences
+
+    def getStruct(self):
+        structures = []
+        for sentence in self.sentences:
+            punc = ""
+            for fragment in sentence:
+                punc += fragment.separator
+            print(punc)
+            structures.append(punc)
+
