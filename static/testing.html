@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+    <body>
+
+        <h1>testing</h1>
+        <p id="demo"></p>
+
+        <script>
+
+            // todo processing to ensure content can be sorted nicely
+            // ie get rid of extra spaces, etc
+            class Paragraph {
+                constructor(body) {
+                    this.body = body;
+                    this.sentences = [];
+                    let temp = this.body.split(/[.?!]+/);
+                    for(let i = 0; i < temp.length; i++){
+                        this.sentences[i] = new Sentence(temp[i]);
+                    }
+                    this.sentNum = temp.length;
+                    this.wordNum = this.body.split(" ").length;
+                }
+                toString(){
+                    return this.body;
+                }
+            }
+            
+            class Sentence{
+                constructor(content){
+                    this.content = content;
+                    this.fragments = [];
+                    let temp = this.content.split(/[,;:-]+/);
+                    for(let i = 0; i < temp.length; i++){
+                        this.fragments[i] = new SentenceFragment(temp[i]);
+                    }
+                    this.fragNum = temp.length;
+                    this.wordNum = this.content.split(" ").length;
+                }
+                toString(){
+                    return this.content;
+                }
+            }
+
+            
+            class SentenceFragment{
+                // todo extra whitespace: dead word?
+                constructor(content){
+                    this.content = content;
+                    this.words = [];
+                    let temp = this.content.split(" ");
+                    for(let i = 0; i < temp.length; i++){
+                        this.words[i] = new Word(temp[i]);
+                    }
+                    this.wordNum = temp.length;
+                }
+                toString(){
+                    return this.content;
+                }
+            }
+
+            class Word{
+                constructor(word){
+                    this.word = word;
+                }
+                toString(){
+                    return this.word;
+                }
+            }
+            
+            const temp2 = new Paragraph("sentence 1, fragment 2; fragment 3. sentence 2? sentence 3");
+            document.getElementById("demo").innerHTML = temp2.sentences[0].fragments[2].words[2];
+        </script>
+
+    </body>
+</html>

@@ -6,11 +6,17 @@
         <title>Writing Analysis Editing Helper</title>
         <script type="text/javascript" src="../static/main.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
 
 </head>
 <style>
     body {
         background-color: rgb(240, 241, 245);
+    }
+    section {
+        display: -webkit-flex;
+        display: flex;
+        flex-direction: row;
     }
     .editor {
         background-color: white;
@@ -19,6 +25,7 @@
         padding: 50px;
         padding-top: 75px;
         border-radius: 3px;
+        overflow: auto;
     }
     .header {
         background-color: white;
@@ -29,6 +36,12 @@
     .editContent {
         padding: 50px;
         padding-left: 60px;
+        flex: 1;
+    }
+    .graphs{
+        padding: 50px;
+        height: 315px;
+        flex: 3;
     }
     .options {
         background-color: rgb(243, 246, 252);
@@ -79,26 +92,126 @@
 
     </div>
 
-    <div class="editContent">
-        <div class="editor" contenteditable="true" id="editor"></div>
-    </div>
+    <section>
+        <div class="editContent">
+            <div class="editor" contenteditable="true" id="editor"></div>
+        </div>
+        <div class="graphs">
+            <canvas id="sentenceChart" style="height:100px; background-color:white;"></canvas>
+            <canvas id="structChart" style="height:100px; background-color: white;"></canvas>
+        </div>
+    </section>
     <button onclick="sendData()">Send Data</button>
     <div id="output"></div>
     <script>
+        const sentChart = new Chart("sentenceChart", {
+            type: "bar",
+            data: {
+                labels: [],
+                datasets: [{
+                    // backgroundColor:
+                    label: 'Sentence Lengths',
+                    data: []
+                }]
+            },
+            options: {
+                responsive:true,
+                maintainAspectRatio: false,
+            },
+        });
+        const structChart = new Chart("structChart", {
+            type: "bar",
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Sentence Structure Count',
+                    data: []
+                }]
+            },
+            options: {
+                responsive:true,
+                maintainAspectRatio: false,
+            },
+        });
+
         function sendData() {
-            var value = document.getElementById('editor').innerHTML;
-            $.ajax({
+            var value = document.getElementById('editor').innerText;
+            var doc = new Document(value);
+            updateCharts(doc);
+            addColors(value, doc);
+
+            /*$.ajax({
                 url: '/process',
                 type: 'POST',
                 data: { 'data': value },
                 success: function(response) {
                     document.getElementById('output').innerHTML = response;
+                    updateChart(response)
                 },
                 error: function(error) {
                     console.log(error);
                 }
-            });
+            });*/
         }
+
+        function addColors(value, doc){
+            console.log("help");
+            let nums = doc.getSentLengths();
+            console.log(nums);
+            let pos = 0;
+            for(let i = 0; i < nums.length; i++){
+                let color = '<mark style="background-color: ';
+                switch(nums[i]){
+                    case 0: case 1: case 2: case 3: case 4: case 5:
+                        color += "rgb(213, 236, 184)";
+                        break;
+                    case 6: case 7: case 8:
+                        color += "rgb(184, 236, 206)";
+                        break;
+                    case 9: case 10: case 11:
+                        color += "rgb(184, 236, 235)";
+                        break;
+                    case 12: case 13: case 14:
+                        color += "rgb(184, 204, 236)";
+                        break;
+                    case 15: case 16: case 17:
+                        color += "rgb(189, 184, 236)";
+                        break;
+                    case 18: case 19: case 20:
+                        color += "rgb(214, 184, 236)";
+                        break;
+                    default:
+                        color += "rgb(248, 171, 255)";
+                }
+                color += ';">';
+                // add to start of sentence
+                let before = value.substring(0, pos);
+                let sentLength = doc.paragraphs[0].sentences[i].content.length;
+                let sent = value.substring(pos, pos + sentLength);
+                let after = value.substring(pos + sentLength);
+                console.log(pos);
+                value = before + color + sent + "</mark>" + after;
+                pos += sentLength + color.length + 8;
+                console.log(pos);
+                console.log(value);
+                
+                // add to end of sentence
+            }
+            document.getElementById('editor').innerHTML = value;
+        }
+        /*var body = document.getElementById('editor');
+        var bodyText = body.innerText;*/
+
+        function updateCharts(body){
+            updateChart(body.getSentLengths());
+        }
+
+        function updateChart(data){
+            sentChart.data.labels = data;
+            sentChart.data.datasets.forEach((dataset) => {dataset.data = data});
+            sentChart.update();
+        }
+        
     </script>
 
 </body>
