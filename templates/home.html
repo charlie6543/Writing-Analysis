@@ -145,6 +145,8 @@
                 type: 'POST',
                 data: { 'data': value },
                 success: function(response) {
+                    
+                    console.log("senddata updating");
                     document.getElementById('output').innerHTML = response;
                     updateChart(response)
                 },
