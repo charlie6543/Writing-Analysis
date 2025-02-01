@@ -10,6 +10,7 @@ function changeSize(){
 
 class Document {
     constructor(body){
+        this.self = this;
         this.body = body;
         this.paragraphs = [];
         let temp = this.body.split('/n');
@@ -22,6 +23,14 @@ class Document {
     toString(){
         return this.body;
     }
+    getWords(){
+        let frags = this.getFragments();
+        let ret = [];
+        for(let i = 0; i < frags.length; i++){
+            ret.push(frags.words);
+        }
+        return ret;
+    }
     getSentLengths(){
         let wordCounts = [];
         for (let i = 0; i < this.paragraphs.length; i++){
@@ -31,6 +40,52 @@ class Document {
         }
         return wordCounts;
     }
+    getWordLengths(){
+        let wordLengths = [];
+        for (let i = 0; i < this.paragraphs.length; i++){
+            for(let n = 0; n < this.paragraphs[i].sentences.length; n++){
+                for(let h = 0; h < this.paragraphs[i].sentences[n].fragments.length; h++){
+                    for(let j = 0; j < this.paragraphs[i].sentences[n].fragments[h].words.length; j++){
+                        let word = this.paragraphs[i].sentences[n].fragments[h].words[j];
+                        wordLengths.push(word.length);
+                    }
+                }
+            }
+        }
+        for(let h = 0; h < wordLengths.length; h++){
+            console.log(wordLengths[h]);
+        }
+        return wordLengths;
+    }
+    getParagraphSents(){
+        paraLengths = [];
+        for(let i = 0; i < this.paragraphs.length; i++){
+            paraLengths = paragraphs[i].sentences.length;
+        }
+        return paraLengths;
+    }
+    getParagraphWords(){
+        paraLengths = [];
+        for(let i = 0; i < this.paragraphs.length; i++){
+            let words = 0
+            for(let n = 0; n < this.paragraphs[i].sentences.length; n++){
+                for(let h = 0; h < this.paragraphs[i].sentences[n].fragments.length; h++){
+                    for(let j = 0; j < this.paragraphs[i].sentences[n].fragments[h].words; j++){
+                        words++;
+                    }
+                }
+            }
+            paraLengths.push(words);
+        }
+        return paraLengths;
+    }
+    // choices:
+    // words in sentence
+    // letters in words
+    // sentences in paragraph
+    // fragments in sentence
+    // words in paragraphs
+    // words in fragments
 }
 
 class Paragraph {
@@ -85,6 +140,7 @@ class SentenceFragment{
 class Word{
     constructor(word){
         this.word = word;
+        this.length = word.length;
     }
     toString(){
         return this.word;

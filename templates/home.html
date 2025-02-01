@@ -98,10 +98,11 @@
         </div>
         <div class="graphs">
             <canvas id="sentenceChart" style="height:100px; background-color:white;"></canvas>
-            <canvas id="structChart" style="height:100px; background-color: white;"></canvas>
+            <canvas id="wordChart" style="height:100px; background-color: white;"></canvas>
         </div>
     </section>
-    <button onclick="sendData()">Send Data</button>
+    <button onclick="sentenceData()">Sentence Length</button><br>
+    <button onclick="wordData()">Word Length</button>
     <div id="output"></div>
     <script>
         const sentChart = new Chart("sentenceChart", {
@@ -119,12 +120,12 @@
                 maintainAspectRatio: false,
             },
         });
-        const structChart = new Chart("structChart", {
+        const wordChart = new Chart("wordChart", {
             type: "bar",
             data: {
                 labels: [],
                 datasets: [{
-                    label: 'Sentence Structure Count',
+                    label: 'Word Lengths',
                     data: []
                 }]
             },
@@ -134,32 +135,22 @@
             },
         });
 
-        function sendData() {
-            var value = document.getElementById('editor').innerText;
-            var doc = new Document(value);
-            updateCharts(doc);
-            addColors(value, doc);
 
-            /*$.ajax({
-                url: '/process',
-                type: 'POST',
-                data: { 'data': value },
-                success: function(response) {
-                    
-                    console.log("senddata updating");
-                    document.getElementById('output').innerHTML = response;
-                    updateChart(response)
-                },
-                error: function(error) {
-                    console.log(error);
-                }
-            });*/
+        function sentenceData(){
+            var value = document.getElementById('editor').innerText;
+            doc = new Document(value);
+            updateCharts(doc);
+            addSentColors(value, doc);
+        }
+        function wordData(){
+            var value = document.getElementById('editor').innerText;
+            doc = new Document(value);
+            updateCharts(doc);
+            addWordColors(value, doc);
         }
 
-        function addColors(value, doc){
-            console.log("help");
+        function addSentColors(value, doc){
             let nums = doc.getSentLengths();
-            console.log(nums);
             let pos = 0;
             for(let i = 0; i < nums.length; i++){
                 let color = '<mark style="background-color: ';
@@ -191,11 +182,8 @@
                 let sentLength = doc.paragraphs[0].sentences[i].content.length;
                 let sent = value.substring(pos, pos + sentLength);
                 let after = value.substring(pos + sentLength);
-                console.log(pos);
                 value = before + color + sent + "</mark>" + after;
                 pos += sentLength + color.length + 8;
-                console.log(pos);
-                console.log(value);
                 
                 // add to end of sentence
             }
@@ -203,15 +191,57 @@
         }
         /*var body = document.getElementById('editor');
         var bodyText = body.innerText;*/
-
-        function updateCharts(body){
-            updateChart(body.getSentLengths());
+        function addWordColors(value, doc){
+            // TODO work out
+            let nums = doc.getWordLengths();
+            let pos = 0;
+            for(let i = 0; i < nums.length; i++){
+                let color = '<mark style="background-color: ';
+                switch(nums[i]){
+                    case 0: case 1: case 2: case 3: case 4: case 5:
+                        color += "rgb(213, 236, 184)";
+                        break;
+                    case 6: case 7: case 8:
+                        color += "rgb(184, 236, 206)";
+                        break;
+                    case 9: case 10: case 11:
+                        color += "rgb(184, 236, 235)";
+                        break;
+                    case 12: case 13: case 14:
+                        color += "rgb(184, 204, 236)";
+                        break;
+                    case 15: case 16: case 17:
+                        color += "rgb(189, 184, 236)";
+                        break;
+                    case 18: case 19: case 20:
+                        color += "rgb(214, 184, 236)";
+                        break;
+                    default:
+                        color += "rgb(248, 171, 255)";
+                }
+                color += ';">';
+                // add to start of sentence
+                let before = value.substring(0, pos);
+                let sentLength = doc.paragraphs[0].sentences[i].content.length;
+                let sent = value.substring(pos, pos + sentLength);
+                let after = value.substring(pos + sentLength);
+                value = before + color + sent + "</mark>" + after;
+                pos += sentLength + color.length + 8;
+                
+                // add to end of sentence
+            }
+            document.getElementById('editor').innerHTML = value;
         }
 
-        function updateChart(data){
-            sentChart.data.labels = data;
-            sentChart.data.datasets.forEach((dataset) => {dataset.data = data});
-            sentChart.update();
+        function updateCharts(body){
+            updateChart(sentChart, body.getSentLengths());
+            updateChart(wordChart, body.getWordLengths());
+        }
+
+        function updateChart(chart, data){
+            chart.data.labels = data;
+            chart.data.datasets.forEach((dataset) => {dataset.data = data});
+            chart.update();
         }
         
     </script>
