@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Writing Analysis Editing Helper</title>
+        <script type="text/javascript" src="../static/main.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+
+</head>
+<style>
+    body {
+        background-color: rgb(240, 241, 245);
+    }
+    section {
+        display: -webkit-flex;
+        display: flex;
+        flex-direction: row;
+    }
+    .editor {
+        background-color: white;
+        height: 500px;
+        width: 400px;
+        padding: 50px;
+        padding-top: 75px;
+        border-radius: 3px;
+        overflow: auto;
+    }
+    .header {
+        background-color: white;
+        padding: 20px;
+        padding-left: 10px;
+        border-radius: 3px;
+    }
+    .editContent {
+        padding: 50px;
+        padding-left: 60px;
+        flex: 1;
+    }
+    .options {
+        background-color: rgb(243, 246, 252);
+        padding: 10px;
+        padding-left: 15px;
+        border-radius: 3px;
+    }
+    .option {
+        padding: 5px;
+        text-decoration: none;
+        color:black;
+    }
+    .tab {
+        padding: 10px;
+        margin: 50px;
+        overflow: hidden;
+        background-color: white;
+        flex: 3;
+    }
+    .tabcontent {
+        display: none;
+        border-top: none;
+        flex: 3;
+        height: 315px;
+    }
+</style>
+<body>
+    <div class="header">
+        <p style="font-family:Helvetica;">Writing Analysis Editing Helper</p>
+        <div class="options">
+            <select id="fontSize" onclick="changeSize()">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+            </select>
+            <a href="javascript:void(0)" onclick="format('bold')" class="option">
+                <span class="fa fa-bold fa-fw"><b>B</b></span>
+            </a>
+            <a href="javascript:void(0)" onclick="format('italic')" class="option">
+                <span class="fa fa-italic fa-fw"><i>I</i></span>
+            </a>
+            <a href="javascript:void(0)" onclick="format('underline')" class="option">
+                <span class="fa fa-underline fa-fw">U</span>
+            </a>
+            <a href="javascript:void(0)" onclick="format('insertunorderedlist')" class="option">
+                <span class="fa fa-list fa-fw">uL</span>
+            </a>
+            <a href="javascript:void(0)" onclick="format('insertOrderedList')" class="option">
+                <span class="fa fa-list-ol fa-fw">oL</span>
+            </a>
+            <label for="prox">Check for duplicate words within</label>
+            <input type="number" id="prox" name="prox" min="0"></input> <span>sentences</span>
+
+        </div>
+        
+        
+
+    </div>
+
+    <section>
+        <div class="editContent">
+            <div class="editor" contenteditable="true" id="editor"></div>
+        </div>
+        <div class = "tab">
+            <button class="tablinks" onclick="openGraphs(event, 'standardgraphs')">Standard</button>
+            <button class="tablinks" onclick="openGraphs(event, 'fragcharts')">Sentence Fragment Breakdown</button>
+            <button class="tablinks" onclick="openGraphs(event, 'paragraphcharts')">Paragraph Breakdown</button>
+                
+            <div id="standardgraphs" class="tabcontent">
+                <canvas id="wordPerSentenceChart" style="height:100px; background-color:white;"></canvas>
+                <canvas id="letterPerWordChart" style="height:100px; background-color: white;"></canvas>
+            </div>
+
+            <div id="fragcharts" class="tabcontent">
+                <canvas id="fragPerSentChart" style="height:100px; background-color: white;"></canvas>
+                <canvas id="wordPerFragChart" style="height:100px; background-color: white;"></canvas>
+            </div>
+
+            <div id="paragraphcharts" class="tabcontent">
+                <canvas id="sentPerParaChart" style="height:100px; background-color: white;"></canvas>
+                <canvas id="wordPerParaChart" style="height:100px; background-color: white;"></canvas>
+                <canvas id="fragPerParaChart" style="height:100px; background-color: white;"></canvas>
+            </div>
+        </div>
+    </section>
+    <button onclick="sentenceData()">Highlight by Sentences</button><br>
+    <button onclick="wordData()">Highlight by Words</button>
+    <div id="output"></div>
+    <script>
+        const wordPerSentChart = new Chart("wordPerSentenceChart", {
+            type: "bar",
+            data: {
+                labels: [],
+                datasets: [{
+                    // backgroundColor:
+                    label: 'Words Per Sentence',
+                    data: []
+                }]
+            },
+            options: {
+                responsive:true,
+                maintainAspectRatio: false,
+            },
+        });
+        const fragPerSentChart = new Chart("fragPerSentChart", {
+            type: "bar",
+            data: {
+                labels: [],
+                datasets: [{
+                    // backgroundColor:
+                    label: 'Sentence Fragments Per Sentence',
+                    data: []
+                }]
+            },
+            options: {
+                responsive:true,
+                maintainAspectRatio: false,
+            },
+        });
+        const letterPerWordChart = new Chart("letterPerWordChart", {
+            type: "bar",
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Letters Per Word',
+                    data: []
+                }]
+            },
+            options: {
+                responsive:true,
+                maintainAspectRatio: false,
+            },
+        });
+        const wordPerFragChart = new Chart("wordPerFragChart", {
+            type: "bar",
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Words Per Fragment',
+                    data: []
+                }]
+            },
+            options: {
+                responsive:true,
+                maintainAspectRatio: false,
+            },
+        });
+        const sentPerParaChart = new Chart("sentPerParaChart", {
+            type: "bar",
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Sentences Per Paragraph',
+                    data: []
+                }]
+            },
+            options: {
+                responsive:true,
+                maintainAspectRatio: false,
+            },
+        });
+        const wordPerParaChart = new Chart("wordPerParaChart", {
+            type: "bar",
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Words Per Paragraph',
+                    data: []
+                }]
+            },
+            options: {
+                responsive:true,
+                maintainAspectRatio: false,
+            },
+        });
+        const fragPerParaChart = new Chart("fragPerParaChart", {
+            type: "bar",
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Sentence Fragments Per Paragraph',
+                    data: []
+                }]
+            },
+            options: {
+                responsive:true,
+                maintainAspectRatio: false,
+            },
+        });
+
+
+        function openGraphs(event, tabName){
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for(i = 0; i < tabcontent.length; i++){
+                tabcontent[i].style.display = "none";
+            }
+
+            tablinks = document.getElementsByClassName("tablinks");
+            for(i = 0; i < tablinks.length; i++){
+                tablinks[i].className = tablinks[i].className.replace("  active", "");
+            }
+
+            document.getElementById(tabName).style.display = "block";
+            event.currentTarget.className += "  active";
+        }
+
+        function sentenceData(){
+            var value = document.getElementById('editor').textContent;
+            // problem: use of textContent and textEditable removes HTML content,
+            // most notably paragraph breaks. however, other things like ul, bold, etc
+            // are also erased. using innerhtml causes a crash for more intensive things
+            doc = new Document(value);
+            updateCharts(doc);
+            addSentColors(value, doc);
+            findDup(document.getElementById("prox").value);
+        }
+        function wordData(){
+            var value = document.getElementById('editor').textContent;
+            doc = new Document(value);
+            updateCharts(doc);
+            addWordColors(value, doc);
+        }
+
+        function addSentColors(value, doc){
+            // todo help
+            let nums = doc.getWordsPerSentence();
+            let pos = 0;
+            for(let i = 0; i < nums.length; i++){
+                let color = '<mark style="background-color: ';
+                switch(nums[i]){
+                    case 0: case 1: case 2: case 3: case 4: case 5:
+                        color += "rgb(213, 236, 184)";
+                        break;
+                    case 6: case 7: case 8:
+                        color += "rgb(184, 236, 206)";
+                        break;
+                    case 9: case 10: case 11:
+                        color += "rgb(184, 236, 235)";
+                        break;
+                    case 12: case 13: case 14:
+                        color += "rgb(184, 204, 236)";
+                        break;
+                    case 15: case 16: case 17:
+                        color += "rgb(189, 184, 236)";
+                        break;
+                    case 18: case 19: case 20:
+                        color += "rgb(214, 184, 236)";
+                        break;
+                    default:
+                        color += "rgb(248, 171, 255)";
+                }
+                color += ';">';
+                // add to start of sentence
+                let before = value.substring(0, pos);
+                let sentLength = doc.paragraphs[0].sentences[i].content.length;
+                let sent = value.substring(pos, pos + sentLength);
+                let after = value.substring(pos + sentLength);
+                value = before + color + sent + "</mark>" + after;
+                pos += sentLength + color.length + 8;
+                
+                // add to end of sentence
+            }
+            document.getElementById('editor').innerHTML = value;
+        }
+        function addWordColors(value, doc){
+            let nums = doc.getLettersPerWord();
+            // paragraph breaks get overwritten
+            let pos = 0;
+            for(let i = 0; i < nums.length; i++){
+                let color = '<mark style="background-color: ';
+                switch(nums[i]){
+                    case 0: case 1: case 2: case 3: case 4: case 5:
+                        color += "rgb(213, 236, 184)";
+                        break;
+                    case 6: case 7: case 8:
+                        color += "rgb(184, 236, 206)";
+                        break;
+                    case 9: case 10: case 11:
+                        color += "rgb(184, 236, 235)";
+                        break;
+                    case 12: case 13: case 14:
+                        color += "rgb(184, 204, 236)";
+                        break;
+                    case 15: case 16: case 17:
+                        color += "rgb(189, 184, 236)";
+                        break;
+                    case 18: case 19: case 20:
+                        color += "rgb(214, 184, 236)";
+                        break;
+                    default:
+                        color += "rgb(248, 171, 255)";
+                }
+                color += ';">';
+                // add to start of sentence
+                let before = value.substring(0, pos);
+                let sentLength = doc.paragraphs[0].sentences[i].content.length;
+                let sent = value.substring(pos, pos + sentLength);
+                let after = value.substring(pos + sentLength);
+                value = before + color + sent + "</mark>" + after;
+                pos += sentLength + color.length + 8;
+                
+                // add to end of sentence
+            }
+            document.getElementById('editor').innerHTML = value;
+        }
+
+        function updateCharts(body){
+            updateChart(wordPerSentChart, body.getWordsPerSentence());
+            updateChart(letterPerWordChart, body.getLettersPerWord());
+            updateChart(sentPerParaChart, body.getSentencesPerParagraph());
+            updateChart(wordPerParaChart, body.getWordsPerParagraph());
+            updateChart(fragPerParaChart, body.getFragsPerParagraph());
+            updateChart(fragPerSentChart, body.getFragsPerSentence());
+            updateChart(wordPerFragChart, body.getWordsPerFrag());
+        }
+
+        function updateChart(chart, data){
+            chart.data.labels = data;
+            chart.data.datasets.forEach((dataset) => {dataset.data = data});
+            chart.update();
+        }
+
+        function findDup(prox){
+            // look for duplicates within prox
+            // maintain dict of words, replace when prox runs out
+        }
+        
+    </script>
+
+</body>
+</html>
