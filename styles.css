@@ -1,0 +1,53 @@
+
+    body {
+        background-color: rgb(240, 241, 245);
+    }
+    section {
+        display: -webkit-flex;
+        display: flex;
+        flex-direction: row;
+    }
+    .editor {
+        background-color: white;
+        height: 500px;
+        width: 400px;
+        padding: 50px;
+        padding-top: 75px;
+        border-radius: 3px;
+        overflow: auto;
+    }
+    .header {
+        background-color: white;
+        padding: 20px;
+        padding-left: 10px;
+        border-radius: 3px;
+    }
+    .editContent {
+        padding: 50px;
+        padding-left: 60px;
+        flex: 1;
+    }
+    .options {
+        background-color: rgb(243, 246, 252);
+        padding: 10px;
+        padding-left: 15px;
+        border-radius: 3px;
+    }
+    .option {
+        padding: 5px;
+        text-decoration: none;
+        color:black;
+    }
+    .tab {
+        padding: 10px;
+        margin: 50px;
+        overflow: hidden;
+        background-color: white;
+        flex: 3;
+    }
+    .tabcontent {
+        display: none;
+        border-top: none;
+        flex: 3;
+        height: 315px;
+    }

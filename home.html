@@ -4,65 +4,12 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Writing Analysis Editing Helper</title>
-        <script type="text/javascript" src="../static/main.js"></script>
+        <link rel="stylesheet" href="styles.css">
+        <script type="text/javascript" src="main.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
 
 </head>
-<style>
-    body {
-        background-color: rgb(240, 241, 245);
-    }
-    section {
-        display: -webkit-flex;
-        display: flex;
-        flex-direction: row;
-    }
-    .editor {
-        background-color: white;
-        height: 500px;
-        width: 400px;
-        padding: 50px;
-        padding-top: 75px;
-        border-radius: 3px;
-        overflow: auto;
-    }
-    .header {
-        background-color: white;
-        padding: 20px;
-        padding-left: 10px;
-        border-radius: 3px;
-    }
-    .editContent {
-        padding: 50px;
-        padding-left: 60px;
-        flex: 1;
-    }
-    .options {
-        background-color: rgb(243, 246, 252);
-        padding: 10px;
-        padding-left: 15px;
-        border-radius: 3px;
-    }
-    .option {
-        padding: 5px;
-        text-decoration: none;
-        color:black;
-    }
-    .tab {
-        padding: 10px;
-        margin: 50px;
-        overflow: hidden;
-        background-color: white;
-        flex: 3;
-    }
-    .tabcontent {
-        display: none;
-        border-top: none;
-        flex: 3;
-        height: 315px;
-    }
-</style>
 <body>
     <div class="header">
         <p style="font-family:Helvetica;">Writing Analysis Editing Helper</p>
@@ -94,7 +41,6 @@
             </a>
             <label for="prox">Check for duplicate words within</label>
             <input type="number" id="prox" name="prox" min="0"></input> <span>sentences</span>
-
         </div>
         
         
@@ -257,7 +203,7 @@
             doc = new Document(value);
             updateCharts(doc);
             addSentColors(value, doc);
-            findDup(document.getElementById("prox").value);
+            findDup(doc, document.getElementById("prox").value);
         }
         function wordData(){
             var value = document.getElementById('editor').textContent;
@@ -365,10 +311,36 @@
             chart.update();
         }
 
-        function findDup(prox){
+        function findDup(doc, prox){
             // look for duplicates within prox
             // maintain dict of words, replace when prox runs out
+            let count = 0;
+            let dict = {}
+            // maintain pos of words? in dict, have array of all pos
+            console.log("FIND DUP: " + doc.paragraphs);
+            for(let i = 0; i < doc.paraNum; i++){
+                for(let n = 0; n < doc.paragraphs[i].sentNum; n++){
+                    count++;
+                    words = doc.paragraphs[i].sentences[n].getWords();
+                    for(let h = 0; h < words.length; h++){
+                        if(dict.hasOwnProperty(words[h].word)){
+                            dict[words[h].stems[0]]++;
+                            //console.log("found dup word " + words[h].stems[0]);
+                        }
+                        else{
+                            dict[words[h].stems[0]] = 1;
+                            //console.log("adding word " + words[h].stems[0]);
+                        }
+                    }
+                }
+            }
         }
+
+        /*function markDup(pos){
+            for(let i = 0; i < pos.length; i++){
+
+            }
+        }*/
         
     </script>
 

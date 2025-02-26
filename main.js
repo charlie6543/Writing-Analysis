@@ -1,5 +1,4 @@
-require('dotenv').config();
-console.log(process.env);
+
 
 function format(command, value) {
     document.execCommand(command, false, value);
@@ -152,6 +151,15 @@ class Sentence{
     toString(){
         return this.content;
     }
+    getWords(){
+        let words = [];
+        for(let i = 0; i < this.fragNum; i++){
+            for(let n = 0; n < this.fragments[i].wordNum; n++){
+                words.push(this.fragments[i].words[n]);
+            }
+        }
+        return words;
+    }
 }
 
 
@@ -173,10 +181,10 @@ class SentenceFragment{
 
 class Word{
     constructor(word){
+        console.log(word);
         this.word = word;
         this.length = word.length;
         this.stems = [];
-        console.log(word);
         fetch('https://www.dictionaryapi.com/api/v3/references/collegiate/json/' + word + '?key=cbe3146d-2936-4b82-9a89-55dc60c2ef67')
         .then(response => {
             if (response.ok) {
@@ -187,12 +195,17 @@ class Word{
         })
         .then(data => {
             // Process the response data here
-            this.stems = data[0]["meta"]["stems"];
+            //console.log(data);
+            this.stems = this.stems.concat(data[0]["meta"]["stems"]);
+            //console.log(this.stems[0]);
         })
         .catch(error => {
             // Handle any errors here
-            console.error(error);
+            //console.error(error);
+            this.stems[0] = this.word;
+            //console.log("error " + this.stems)
         });
+        console.log(this)
     }
     toString(){
         return this.word;
