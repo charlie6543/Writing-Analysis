@@ -51,3 +51,6 @@
         flex: 3;
         height: 315px;
     }
+    .hidden {
+        opacity: 0;
+    }

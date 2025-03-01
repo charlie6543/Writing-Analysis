@@ -5,7 +5,6 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Writing Analysis Editing Helper</title>
         <link rel="stylesheet" href="styles.css">
-        <script type="text/javascript" src="main.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
 
@@ -39,8 +38,6 @@
             <a href="javascript:void(0)" onclick="format('insertOrderedList')" class="option">
                 <span class="fa fa-list-ol fa-fw">oL</span>
             </a>
-            <label for="prox">Check for duplicate words within</label>
-            <input type="number" id="prox" name="prox" min="0"></input> <span>sentences</span>
         </div>
         
         
@@ -49,9 +46,10 @@
 
     <section>
         <div class="editContent">
-            <div class="editor" contenteditable="true" id="editor"></div>
+            <div class="editor" contenteditable spellcheck id="editor"></div>
         </div>
         <div class = "tab">
+            <!--todo put in js, set one to be open on auto-->
             <button class="tablinks" onclick="openGraphs(event, 'standardgraphs')">Standard</button>
             <button class="tablinks" onclick="openGraphs(event, 'fragcharts')">Sentence Fragment Breakdown</button>
             <button class="tablinks" onclick="openGraphs(event, 'paragraphcharts')">Paragraph Breakdown</button>
@@ -73,9 +71,23 @@
             </div>
         </div>
     </section>
-    <button onclick="sentenceData()">Highlight by Sentences</button><br>
-    <button onclick="wordData()">Highlight by Words</button>
-    <div id="output"></div>
+    <!-- todo put this in js section instead-->
+    <label for="picker">Highlight by:</label>
+    <select name="picker" id="picker">
+        <option value="paragraph">Length of Paragraphs</option>
+        <option value="sentence">Length of Sentences</option>
+        <option value="frag">Length of Sentence Fragments</option>
+        <option value="words">Length of Words</option>
+        <option value="dup">Duplicate words</option>
+    </select>
+    <span id="dupPicker" class="hidden">
+        <label for="prox">Check for duplicate words within</label>
+        <input type="number" id="prox" name="prox" min="0" value="100"></input> <span>characters</span>
+    </span>
+    <br><button id="submit">Submit</button>
+    
+
+    <!-- todo put this is js file somehow-->
     <script>
         const wordPerSentChart = new Chart("wordPerSentenceChart", {
             type: "bar",
@@ -177,172 +189,8 @@
                 maintainAspectRatio: false,
             },
         });
-
-
-        function openGraphs(event, tabName){
-            var i, tabcontent, tablinks;
-            tabcontent = document.getElementsByClassName("tabcontent");
-            for(i = 0; i < tabcontent.length; i++){
-                tabcontent[i].style.display = "none";
-            }
-
-            tablinks = document.getElementsByClassName("tablinks");
-            for(i = 0; i < tablinks.length; i++){
-                tablinks[i].className = tablinks[i].className.replace("  active", "");
-            }
-
-            document.getElementById(tabName).style.display = "block";
-            event.currentTarget.className += "  active";
-        }
-
-        function sentenceData(){
-            var value = document.getElementById('editor').textContent;
-            // problem: use of textContent and textEditable removes HTML content,
-            // most notably paragraph breaks. however, other things like ul, bold, etc
-            // are also erased. using innerhtml causes a crash for more intensive things
-            doc = new Document(value);
-            updateCharts(doc);
-            addSentColors(value, doc);
-            findDup(doc, document.getElementById("prox").value);
-        }
-        function wordData(){
-            var value = document.getElementById('editor').textContent;
-            doc = new Document(value);
-            updateCharts(doc);
-            addWordColors(value, doc);
-        }
-
-        function addSentColors(value, doc){
-            // todo help
-            let nums = doc.getWordsPerSentence();
-            let pos = 0;
-            for(let i = 0; i < nums.length; i++){
-                let color = '<mark style="background-color: ';
-                switch(nums[i]){
-                    case 0: case 1: case 2: case 3: case 4: case 5:
-                        color += "rgb(213, 236, 184)";
-                        break;
-                    case 6: case 7: case 8:
-                        color += "rgb(184, 236, 206)";
-                        break;
-                    case 9: case 10: case 11:
-                        color += "rgb(184, 236, 235)";
-                        break;
-                    case 12: case 13: case 14:
-                        color += "rgb(184, 204, 236)";
-                        break;
-                    case 15: case 16: case 17:
-                        color += "rgb(189, 184, 236)";
-                        break;
-                    case 18: case 19: case 20:
-                        color += "rgb(214, 184, 236)";
-                        break;
-                    default:
-                        color += "rgb(248, 171, 255)";
-                }
-                color += ';">';
-                // add to start of sentence
-                let before = value.substring(0, pos);
-                let sentLength = doc.paragraphs[0].sentences[i].content.length;
-                let sent = value.substring(pos, pos + sentLength);
-                let after = value.substring(pos + sentLength);
-                value = before + color + sent + "</mark>" + after;
-                pos += sentLength + color.length + 8;
-                
-                // add to end of sentence
-            }
-            document.getElementById('editor').innerHTML = value;
-        }
-        function addWordColors(value, doc){
-            let nums = doc.getLettersPerWord();
-            // paragraph breaks get overwritten
-            let pos = 0;
-            for(let i = 0; i < nums.length; i++){
-                let color = '<mark style="background-color: ';
-                switch(nums[i]){
-                    case 0: case 1: case 2: case 3: case 4: case 5:
-                        color += "rgb(213, 236, 184)";
-                        break;
-                    case 6: case 7: case 8:
-                        color += "rgb(184, 236, 206)";
-                        break;
-                    case 9: case 10: case 11:
-                        color += "rgb(184, 236, 235)";
-                        break;
-                    case 12: case 13: case 14:
-                        color += "rgb(184, 204, 236)";
-                        break;
-                    case 15: case 16: case 17:
-                        color += "rgb(189, 184, 236)";
-                        break;
-                    case 18: case 19: case 20:
-                        color += "rgb(214, 184, 236)";
-                        break;
-                    default:
-                        color += "rgb(248, 171, 255)";
-                }
-                color += ';">';
-                // add to start of sentence
-                let before = value.substring(0, pos);
-                let sentLength = doc.paragraphs[0].sentences[i].content.length;
-                let sent = value.substring(pos, pos + sentLength);
-                let after = value.substring(pos + sentLength);
-                value = before + color + sent + "</mark>" + after;
-                pos += sentLength + color.length + 8;
-                
-                // add to end of sentence
-            }
-            document.getElementById('editor').innerHTML = value;
-        }
-
-        function updateCharts(body){
-            updateChart(wordPerSentChart, body.getWordsPerSentence());
-            updateChart(letterPerWordChart, body.getLettersPerWord());
-            updateChart(sentPerParaChart, body.getSentencesPerParagraph());
-            updateChart(wordPerParaChart, body.getWordsPerParagraph());
-            updateChart(fragPerParaChart, body.getFragsPerParagraph());
-            updateChart(fragPerSentChart, body.getFragsPerSentence());
-            updateChart(wordPerFragChart, body.getWordsPerFrag());
-        }
-
-        function updateChart(chart, data){
-            chart.data.labels = data;
-            chart.data.datasets.forEach((dataset) => {dataset.data = data});
-            chart.update();
-        }
-
-        function findDup(doc, prox){
-            // look for duplicates within prox
-            // maintain dict of words, replace when prox runs out
-            let count = 0;
-            let dict = {}
-            // maintain pos of words? in dict, have array of all pos
-            console.log("FIND DUP: " + doc.paragraphs);
-            for(let i = 0; i < doc.paraNum; i++){
-                for(let n = 0; n < doc.paragraphs[i].sentNum; n++){
-                    count++;
-                    words = doc.paragraphs[i].sentences[n].getWords();
-                    for(let h = 0; h < words.length; h++){
-                        if(dict.hasOwnProperty(words[h].word)){
-                            dict[words[h].stems[0]]++;
-                            //console.log("found dup word " + words[h].stems[0]);
-                        }
-                        else{
-                            dict[words[h].stems[0]] = 1;
-                            //console.log("adding word " + words[h].stems[0]);
-                        }
-                    }
-                }
-            }
-        }
-
-        /*function markDup(pos){
-            for(let i = 0; i < pos.length; i++){
-
-            }
-        }*/
-        
     </script>
 
 </body>
 </html>
+<script type="text/javascript" src="main.js"></script>
