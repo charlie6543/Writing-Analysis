@@ -53,7 +53,7 @@ protecting against SQL injection: replace with &amp shit ?
 highlighting text to only analyze that section
 
 */
-import key from 'env.js';
+import key from './env.js';
 console.log(key);
 
 document.getElementById("submit").addEventListener("click", runAnalysis);
