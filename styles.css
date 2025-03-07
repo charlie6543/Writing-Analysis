@@ -54,6 +54,15 @@
         flex: 3;
         height: 315px;
     }
+    #standardgraphs{
+        display: block;
+    }
+    .graph {
+        margin: 10px;
+        margin-top: 30px;
+        max-height: 250px;
+        background-color: white;
+    }
     .hidden {
         opacity: 0;
     }

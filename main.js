@@ -14,10 +14,14 @@ function formatDoc(event){
 
 }
     
+
+BUGS:
+pos is fucked up for word and frag
+when re-analyzing, words/letters get eaten
+
 PLAN:
-find a way to unbreak paragraphs
 try to fix graphs
-html issues with parsing fix?
+html issues fix?
 
 word graphs
 more graphs
@@ -36,22 +40,22 @@ add settings + buttons to change analysis
 
 TODO:
 graphs broken
-paragraphs broken
 
 HTML. help
 ?? update prox when highlights are added? for paragraphs, sentences, words, frags ??
 update prox so it accounts for HTML and change so value is taken from innerHTML instead
 of textContent
 
-bandaid solution: add more buttons
 protecting against SQL injection: replace with &amp shit ?
 
 > disclude common words like 'a'
-> track paragraphs/sentences so users can sort by that option?
 
 highlighting text to only analyze that section
 
 */
+import key from 'env.js';
+console.log(key);
+
 document.getElementById("submit").addEventListener("click", runAnalysis);
 document.getElementById("picker").addEventListener("change", unhide);
 
@@ -179,14 +183,18 @@ class Paragraph {
         this.sentences = [];
         this.pos = pos;
         this.endPos = pos + this.body.length + 1;
-        let temp = this.body.split(/[.?!]+/);
+        let regex = /[.?!]+/;
+        let temp = this.body.split(regex);
         let sentPos = pos;
         this.sentNum = temp.length;
 
         for(let i = 0; i < temp.length; i++){
             if(temp[i] !== "" && temp[i] !== " "){
-                this.sentences[i] = new Sentence(temp[i], sentPos);
-                sentPos += temp[i].length + 1;
+                let posInContent = this.body.search(temp[i]);
+                let punc = (this.body.charAt(posInContent + temp[i].length));
+                if(regex.exec(punc)) temp[i] += punc;
+                this.sentences[i] = new Sentence(temp[i] + " ", sentPos);
+                sentPos += temp[i].length;
             }
             else{
                 this.sentNum--;
@@ -246,13 +254,18 @@ class Sentence{
     constructor(content, pos){
         this.content = content;
         this.fragments = [];
-        let temp = this.content.trim().split(/[,;:-]+/);
+        let regex = /[,;:-]/;
+        let temp = this.content.trim().split(regex);
+
         this.pos = pos;
         this.endPos = pos + this.content.length;
         let fragPos = pos;
         for(let i = 0; i < temp.length; i++){
-            this.fragments[i] = new SentenceFragment(temp[i], fragPos);
-            fragPos += temp[i].length + 1;
+            let posInContent = this.content.search(temp[i]);
+            let punc = (this.content.charAt(posInContent + temp[i].length));
+            if(regex.exec(punc)) temp[i] += punc;
+            this.fragments[i] = new SentenceFragment(temp[i] + " ", fragPos);
+            fragPos += temp[i].length;
         }
         this.fragNum = temp.length;
         this.length = this.content.split(" ").length;
@@ -279,8 +292,8 @@ class SentenceFragment{
         this.endPos = pos + content.length;
         let wordPos = pos;
         for(let i = 0; i < temp.length; i++){
-            this.words[i] = new Word(temp[i], wordPos);
-            wordPos += temp[i].length + 1;
+            this.words[i] = new Word(temp[i] + " ", wordPos);
+            wordPos += temp[i].length;
         }
         this.length = temp.length;
     }
@@ -418,9 +431,9 @@ function addColors(value, doc, highlightBy){
             color += ';">';
             // add to start of sentence
             let start = cur.pos + offset;
-            let end = cur.endPos + offset;
+            let end = cur.endPos + offset - 1;
             let sent = value.substring(start, end);
-            para += color + sent + "</mark>";
+            para += color + sent + "</mark>" + value.charAt(end);
             //offset += 59;
         }
         para += "</div>";

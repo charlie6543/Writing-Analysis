@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Writing Analysis Editing Helper</title>
         <link rel="stylesheet" href="styles.css">
+        <link rel="icon" type="image/x-icon" href="./favicon.ico">
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
 
@@ -55,19 +56,19 @@
             <button class="tablinks" onclick="openGraphs(event, 'paragraphcharts')">Paragraph Breakdown</button>
                 
             <div id="standardgraphs" class="tabcontent">
-                <canvas id="wordPerSentenceChart" style="height:100px; background-color:white;"></canvas>
-                <canvas id="letterPerWordChart" style="height:100px; background-color: white;"></canvas>
+                <canvas id="wordPerSentenceChart" class="graph"></canvas>
+                <canvas id="letterPerWordChart" class="graph"></canvas>
             </div>
 
             <div id="fragcharts" class="tabcontent">
-                <canvas id="fragPerSentChart" style="height:100px; background-color: white;"></canvas>
-                <canvas id="wordPerFragChart" style="height:100px; background-color: white;"></canvas>
+                <canvas id="fragPerSentChart" class="graph"></canvas>
+                <canvas id="wordPerFragChart" class="graph"></canvas>
             </div>
 
             <div id="paragraphcharts" class="tabcontent">
-                <canvas id="sentPerParaChart" style="height:100px; background-color: white;"></canvas>
-                <canvas id="wordPerParaChart" style="height:100px; background-color: white;"></canvas>
-                <canvas id="fragPerParaChart" style="height:100px; background-color: white;"></canvas>
+                <canvas id="sentPerParaChart" class="graph"></canvas>
+                <canvas id="wordPerParaChart" class="graph"></canvas>
+                <canvas id="fragPerParaChart" class="graph"></canvas>
             </div>
         </div>
     </section>
@@ -193,4 +194,4 @@
 
 </body>
 </html>
-<script type="text/javascript" src="main.js"></script>
+<script type="module" src="main.js"></script>
