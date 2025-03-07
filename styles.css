@@ -16,6 +16,9 @@
         border-radius: 3px;
         overflow: auto;
     }
+    .editor div {
+        padding-top: 10px;
+    }
     .header {
         background-color: white;
         padding: 20px;

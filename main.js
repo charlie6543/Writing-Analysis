@@ -15,10 +15,24 @@ function formatDoc(event){
 }
     
 PLAN:
-add buttons for dup words
 find a way to unbreak paragraphs
 try to fix graphs
-html fix?
+html issues with parsing fix?
+
+word graphs
+more graphs
+analyzing sentence structure?
+
+fiddle with graphs to clean up document getter methods (return object in methods)
+fiddle with pos values in fragment, word
+deal with extra whitespaces
+overhaul ui
+> add colors to graphs
+add settings + buttons to change analysis
+
+> use api to match stems instead of exact word
+>> convert to async/await
+>> hide api key
 
 TODO:
 graphs broken
@@ -32,25 +46,10 @@ of textContent
 bandaid solution: add more buttons
 protecting against SQL injection: replace with &amp shit ?
 
-
-> use api to match stems instead of exact word
->> convert to async/await
->> hide api key
-
 > disclude common words like 'a'
 > track paragraphs/sentences so users can sort by that option?
 
 highlighting text to only analyze that section
-word graphs
-more graphs
-analyzing sentence structure?
-
-fiddle with graphs to clean up document getter methods (return object in methods)
-fiddle with pos values in fragment, word
-deal with extra whitespaces
-overhaul ui
-> add colors to graphs
-add settings + buttons to change analysis
 
 */
 document.getElementById("submit").addEventListener("click", runAnalysis);
@@ -69,14 +68,15 @@ function changeSize(){
 class Document {
     constructor(body){
         this.body = body.innerText;
-        let paras = body.querySelectorAll("div,p");
+        let paras = this.body.split("\n");
+        // in some cases discounts the first paragraph
         this.paragraphs = [];
         let pos = 0;
         if(paras.length == 0){
             this.paragraphs[0] = new Paragraph(this.body, 0);
         }
         for(let i = 0; i < paras.length; i++){
-            let text = paras[i].textContent;
+            let text = paras[i];
             this.paragraphs[i] = new Paragraph(text, pos);
             pos += text.length;
         }
@@ -196,6 +196,21 @@ class Paragraph {
     }
     toString(){
         return this.body;
+    }
+    getFragments(){
+        let frags = [];
+        for(let i = 0; i < this.sentences.length; i++){
+            frags.push.apply(frags, this.sentences[i].fragments);
+        }
+        return frags;
+    }
+    getWords(){
+        let words = [];
+        let frags = this.getFragments();
+        for(let i = 0; i < frags.length; i++){
+            words.push.apply(words, frags[i].words);
+        }
+        return words;
     }
     // get fragments in sentences
     getFragNums(){
@@ -355,21 +370,25 @@ function unhide(){
 // depending on highlightBy/ user settings
 function addColors(value, doc, highlightBy){
     let offset = 0;
-    let analysis = [];
-    switch(highlightBy){
-        case "paragraph": 
-            analysis = doc.paragraphs;
-            break;
-        case "sentence":
-            analysis = doc.getSentences();
-            break;
-        case "frag":
-            analysis = doc.getFragments();
-            break;
-        case "words":
-            analysis = doc.getWords();
-            break;
-    }
+    let newDoc = "";
+    for(let i = 0; i < doc.paragraphs.length; i++){
+        let para = "<div>";
+        let analysis = [];
+        switch(highlightBy){
+            case "paragraph": 
+                // TODO
+                analysis = doc.paragraphs;
+                break;
+            case "sentence":
+                analysis = doc.paragraphs[i].sentences;
+                break;
+            case "frag":
+                analysis = doc.paragraphs[i].getFragments();
+                break;
+            case "words":
+                analysis = doc.paragraphs[i].getWords();
+                break;
+        }
         for(let n = 0; n < analysis.length; n++){
             let color = '<mark style="background-color: ';
             let cur = analysis[n];
@@ -400,55 +419,17 @@ function addColors(value, doc, highlightBy){
             // add to start of sentence
             let start = cur.pos + offset;
             let end = cur.endPos + offset;
-            let before = value.substring(0, start);
             let sent = value.substring(start, end);
-            let after = value.substring(end);
-            value = before + color + sent + "</mark>" + after;
-            offset += 59;
+            para += color + sent + "</mark>";
+            //offset += 59;
         }
-    document.getElementById('editor').innerHTML = value;
-}
-function addWordColors(value, doc){
-    let nums = doc.getLettersPerWord();
-    // paragraph breaks get overwritten
-    let pos = 0;
-    for(let i = 0; i < nums.length; i++){
-        let color = '<mark style="background-color: ';
-        switch(nums[i]){
-            case 0: case 1: case 2: case 3: case 4: case 5:
-                color += "rgb(213, 236, 184)";
-                break;
-            case 6: case 7: case 8:
-                color += "rgb(184, 236, 206)";
-                break;
-            case 9: case 10: case 11:
-                color += "rgb(184, 236, 235)";
-                break;
-            case 12: case 13: case 14:
-                color += "rgb(184, 204, 236)";
-                break;
-            case 15: case 16: case 17:
-                color += "rgb(189, 184, 236)";
-                break;
-            case 18: case 19: case 20:
-                color += "rgb(214, 184, 236)";
-                break;
-            default:
-                color += "rgb(248, 171, 255)";
-        }
-        color += ';">';
-        // add to start of sentence
-        let before = value.substring(0, pos);
-        let sentLength = doc.paragraphs[0].sentences[i].content.length;
-        let sent = value.substring(pos, pos + sentLength);
-        let after = value.substring(pos + sentLength);
-        value = before + color + sent + "</mark>" + after;
-        pos += sentLength + color.length + 8;
-        
-        // add to end of sentence
+        para += "</div>";
+        // todo some issues with whitespace/punctuation/etc being removed (whitespace for spaces, etc)
+        newDoc += para;
     }
-    document.getElementById('editor').innerHTML = value;
+    document.getElementById('editor').innerHTML = newDoc;
 }
+
 
 function updateCharts(body){
     updateChart(wordPerSentChart, body.getWordsPerSentence());
