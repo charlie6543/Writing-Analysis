@@ -17,10 +17,14 @@ function formatDoc(event){
 
 BUGS:
 pos is fucked up for word and frag
+>> adds extra whitespace at end by adding char at end. for frags, this is the punc
+>> no idea for words, that shits fucked
 when re-analyzing, words/letters get eaten
 
+word dupes are fucked
+also no paragraphs for word dupes
+
 PLAN:
-try to fix graphs
 html issues fix?
 
 word graphs
@@ -37,24 +41,17 @@ add settings + buttons to change analysis
 > use api to match stems instead of exact word
 >> convert to async/await
 >> hide api key
+> disclude common words like 'a'
 
 TODO:
-graphs broken
-
-HTML. help
-?? update prox when highlights are added? for paragraphs, sentences, words, frags ??
-update prox so it accounts for HTML and change so value is taken from innerHTML instead
-of textContent
-
 protecting against SQL injection: replace with &amp shit ?
 
-> disclude common words like 'a'
 
 highlighting text to only analyze that section
 
 */
-import key from './env.js';
-console.log(key);
+//import key from './env.js';
+//console.log(key);
 
 document.getElementById("submit").addEventListener("click", runAnalysis);
 document.getElementById("picker").addEventListener("change", unhide);
@@ -80,9 +77,11 @@ class Document {
             this.paragraphs[0] = new Paragraph(this.body, 0);
         }
         for(let i = 0; i < paras.length; i++){
-            let text = paras[i];
-            this.paragraphs[i] = new Paragraph(text, pos);
-            pos += text.length;
+            if(paras[i] != "" && paras[i] != " "){
+                let text = paras[i];
+                this.paragraphs.push(new Paragraph(text, pos));
+                pos += text.length;
+            }
         }
         this.paraNum = this.paragraphs.length;
         this.wordNum = this.body.split(" ").length;
@@ -153,8 +152,7 @@ class Document {
         for(let i = 0; i < this.paragraphs.length; i++){
             for(let h = 0; h < this.paragraphs[i].sentences.length; h++){
                 for(let m = 0; m < this.paragraphs[i].sentences[h].fragments.length; m++){
-                    fragLen.push(this.paragraphs[i].sentences[h].fragments[m].wordNum);
-                    
+                    fragLen.push(this.paragraphs[i].sentences[h].fragments[m].length);
                 }
             }
         }
@@ -167,14 +165,6 @@ class Document {
         }
         return wordLengths;
     }
-    // choices:
-    // -sentences in paragraph
-    // -fragments in paragraph ?
-    // -words in paragraphs
-    // -fragments in sentence
-    // words in sentence
-    // --words in fragments
-    // letters in words
 }
 
 class Paragraph {
@@ -232,7 +222,7 @@ class Paragraph {
     getSentenceLengths(){
         let sentWords = [];
         for(let i = 0; i < this.sentNum; i++){
-            sentWords.push(this.sentences[i].wordNum);
+            sentWords.push(this.sentences[i].length);
         }
         return sentWords;
     }
@@ -343,6 +333,7 @@ class Word{
 
 function openGraphs(event, tabName){
     var i, tabcontent, tablinks;
+    
     tabcontent = document.getElementsByClassName("tabcontent");
     for(i = 0; i < tabcontent.length; i++){
         tabcontent[i].style.display = "none";
@@ -500,7 +491,7 @@ function findDup(doc, prox){
         for(let i = 0; i < dupes.length - 1; i++){
             let dupe1 = dupes[i];
             let dupe2 = dupes[i + 1];
-            console.log(`dupe1: ${dupe1} dupe2: ${dupe2} diff: ${dupe2.pos - dupe1.endPos} while prox=${prox}`);
+            //console.log(`dupe1: ${dupe1} dupe2: ${dupe2} diff: ${dupe2.pos - dupe1.endPos} while prox=${prox}`);
             if(dupe2.pos - dupe1.endPos <= prox){
                 // add to start of sentence
                 let start = dupe1.pos + offset;
