@@ -1,20 +1,4 @@
-/*document.querySelector("div[contenteditable]").addEventListener("keydown", formatDoc, event);
-
-function formatDoc(event){
-    // problem: backspace
-    // problem: duplicate punct
-    // problem: copy paste
-    let key = event.key;
-    let doc = document.querySelector("div[contenteditable");
-    switch (key){
-        case '!': case '.': case '?':
-            doc.textContent += "hi";
-
-    }
-
-}
-    
-
+/*
 BUGS:
 pos is fucked up for word and frag
 >> adds extra whitespace at end by adding char at end. for frags, this is the punc
@@ -25,18 +9,15 @@ word dupes are fucked
 also no paragraphs for word dupes
 
 PLAN:
-html issues fix?
+FIX DUPES
+fix pos/analysis buttons
+add settings + buttons to change analysis
 
 word graphs
 more graphs
 analyzing sentence structure?
 
 fiddle with graphs to clean up document getter methods (return object in methods)
-fiddle with pos values in fragment, word
-deal with extra whitespaces
-overhaul ui
-> add colors to graphs
-add settings + buttons to change analysis
 
 > use api to match stems instead of exact word
 >> convert to async/await
@@ -45,8 +26,6 @@ add settings + buttons to change analysis
 
 TODO:
 protecting against SQL injection: replace with &amp shit ?
-
-
 highlighting text to only analyze that section
 
 */
@@ -334,6 +313,8 @@ class Word{
 function openGraphs(event, tabName){
     var i, tabcontent, tablinks;
     
+
+
     tabcontent = document.getElementsByClassName("tabcontent");
     for(i = 0; i < tabcontent.length; i++){
         tabcontent[i].style.display = "none";
@@ -341,11 +322,11 @@ function openGraphs(event, tabName){
 
     tablinks = document.getElementsByClassName("tablinks");
     for(i = 0; i < tablinks.length; i++){
-        tablinks[i].className = tablinks[i].className.replace("  active", "");
+        tablinks[i].classList.remove("active");
     }
 
     document.getElementById(tabName).style.display = "block";
-    event.currentTarget.className += "  active";
+    event.currentTarget.classList.add("active");
 }
 
 function runAnalysis(){
@@ -448,6 +429,32 @@ function updateCharts(body){
 function updateChart(chart, data){
     chart.data.labels = data;
     chart.data.datasets.forEach((dataset) => {dataset.data = data});
+    let colors = [];
+    for(let i = 0; i < data.length; i++){
+        switch(data[i]){
+            case 0: case 1: case 2: case 3: case 4: case 5:
+                colors.push("rgb(213, 236, 184)");
+                break;
+            case 6: case 7: case 8:
+                colors.push("rgb(184, 236, 206)");
+                break;
+            case 9: case 10: case 11:
+                colors.push("rgb(184, 236, 235)");
+                break;
+            case 12: case 13: case 14:
+                colors.push("rgb(184, 204, 236)");
+                break;
+            case 15: case 16: case 17:
+                colors.push("rgb(189, 184, 236)");
+                break;
+            case 18: case 19: case 20:
+                colors.push("rgb(214, 184, 236)");
+                break;
+            default:
+                colors.push("rgb(248, 171, 255)");
+        }
+    }
+    chart.data.datasets.forEach((dataset) => {dataset.backgroundColor = colors});
     chart.update();
 }
 
@@ -487,7 +494,6 @@ function findDup(doc, prox){
         }
 
         let offset = 0;
-        // TODO PROBLEM:: HTML ERASED
         for(let i = 0; i < dupes.length - 1; i++){
             let dupe1 = dupes[i];
             let dupe2 = dupes[i + 1];

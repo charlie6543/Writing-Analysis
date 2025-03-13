@@ -1,6 +1,7 @@
 
     body {
-        background-color: rgb(240, 241, 245);
+        background-color: rgb(225, 226, 233);
+        font-family: Helvetica;
     }
     section {
         display: -webkit-flex;
@@ -18,6 +19,7 @@
     }
     .editor div {
         padding-top: 10px;
+        
     }
     .header {
         background-color: white;
@@ -31,7 +33,7 @@
         flex: 1;
     }
     .options {
-        background-color: rgb(243, 246, 252);
+        background-color: rgb(204, 229, 237);
         padding: 10px;
         padding-left: 15px;
         border-radius: 3px;
@@ -65,4 +67,37 @@
     }
     .hidden {
         opacity: 0;
+    }
+    button {
+        padding: 5px;
+        border-radius: 0px;
+        background-color: rgb(225, 226, 233);
+        border-style: none;
+        font-family: Helvetica;
+    }
+    .active {
+        background-color: rgb(204, 229, 237);
+        padding-top: 10px;
+    }
+    #submit {
+        padding: 5px 10px;
+        background-color: white;
+        float: right;
+    }
+    select {
+        background-color: white;
+        border-style: none;
+        font-family: Helvetica;
+        border-radius: 0px;
+        padding: 5px;
+    }
+    option {
+        border-style: none;
+    }
+    label {
+        font-family: Helvetica;
+    }
+    input {
+        border-style: none;
+        padding: 5px;
     }

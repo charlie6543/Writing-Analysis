@@ -14,31 +14,19 @@
     <div class="header">
         <p style="font-family:Helvetica;">Writing Analysis Editing Helper</p>
         <div class="options">
-            <select id="fontSize" onclick="changeSize()">
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-                <option value="6">6</option>
-                <option value="7">7</option>
-                <option value="8">8</option>
+            <label for="picker">Highlight by:</label>
+            <select name="picker" id="picker">
+                <option value="paragraph">Length of Paragraphs</option>
+                <option value="sentence">Length of Sentences</option>
+                <option value="frag">Length of Sentence Fragments</option>
+                <option value="words">Length of Words</option>
+                <option value="dup">Duplicate words</option>
             </select>
-            <a href="javascript:void(0)" onclick="format('bold')" class="option">
-                <span class="fa fa-bold fa-fw"><b>B</b></span>
-            </a>
-            <a href="javascript:void(0)" onclick="format('italic')" class="option">
-                <span class="fa fa-italic fa-fw"><i>I</i></span>
-            </a>
-            <a href="javascript:void(0)" onclick="format('underline')" class="option">
-                <span class="fa fa-underline fa-fw">U</span>
-            </a>
-            <a href="javascript:void(0)" onclick="format('insertunorderedlist')" class="option">
-                <span class="fa fa-list fa-fw">uL</span>
-            </a>
-            <a href="javascript:void(0)" onclick="format('insertOrderedList')" class="option">
-                <span class="fa fa-list-ol fa-fw">oL</span>
-            </a>
+            <span id="dupPicker" class="hidden">
+                <label for="prox">Check for duplicate words within</label>
+                <input type="number" id="prox" name="prox" min="0" value="100"></input> <span>characters</span>
+            </span>
+            <button id="submit">Submit</button>
         </div>
         
         
@@ -50,9 +38,10 @@
             <div class="editor" contenteditable spellcheck id="editor"></div>
         </div>
         <div class = "tab">
-            <button class="tablinks" onclick="openGraphs(event, 'standardgraphs')">Standard</button>
+            <button class="tablinks active" onclick="openGraphs(event, 'standardgraphs')">Standard</button>
             <button class="tablinks" onclick="openGraphs(event, 'fragcharts')">Sentence Fragment Breakdown</button>
             <button class="tablinks" onclick="openGraphs(event, 'paragraphcharts')">Paragraph Breakdown</button>
+            <button class="tablinks" onclick="openGraphs(event, 'paragraph2')">Paragraphs Extended</button>
                 
             <div id="standardgraphs" class="tabcontent">
                 <canvas id="wordPerSentenceChart" class="graph"></canvas>
@@ -67,27 +56,16 @@
             <div id="paragraphcharts" class="tabcontent">
                 <canvas id="sentPerParaChart" class="graph"></canvas>
                 <canvas id="wordPerParaChart" class="graph"></canvas>
+            </div>
+
+            <div id="paragraph2" class="tabcontent">
                 <canvas id="fragPerParaChart" class="graph"></canvas>
+
             </div>
         </div>
     </section>
-    <!-- todo put this in js section instead-->
-    <label for="picker">Highlight by:</label>
-    <select name="picker" id="picker">
-        <option value="paragraph">Length of Paragraphs</option>
-        <option value="sentence">Length of Sentences</option>
-        <option value="frag">Length of Sentence Fragments</option>
-        <option value="words">Length of Words</option>
-        <option value="dup">Duplicate words</option>
-    </select>
-    <span id="dupPicker" class="hidden">
-        <label for="prox">Check for duplicate words within</label>
-        <input type="number" id="prox" name="prox" min="0" value="100"></input> <span>characters</span>
-    </span>
-    <br><button id="submit">Submit</button>
     
 
-    <!-- todo put this is js file somehow-->
     <script>
         const wordPerSentChart = new Chart("wordPerSentenceChart", {
             type: "bar",
@@ -96,7 +74,7 @@
                 datasets: [{
                     // backgroundColor:
                     label: 'Words Per Sentence',
-                    data: []
+                    data: [],
                 }]
             },
             options: {
