@@ -1,11 +1,7 @@
 /*
 BUGS:
-pos is fucked up for word and frag
->> adds extra whitespace at end by adding char at end. for frags, this is the punc
->> no idea for words, that shits fucked
 when re-analyzing, words/letters get eaten
 
-word dupes are fucked
 also no paragraphs for word dupes
 
 PLAN:
@@ -94,7 +90,7 @@ class Document {
     getSentencesPerParagraph(){
         let paraLengths = [];
         for(let i = 0; i < this.paragraphs.length; i++){
-            paraLengths.push(this.paragraphs[i].sentNum);
+            paraLengths.push(this.paragraphs[i].length);
         }
         return paraLengths;
     }
@@ -155,7 +151,7 @@ class Paragraph {
         let regex = /[.?!]+/;
         let temp = this.body.split(regex);
         let sentPos = pos;
-        this.sentNum = temp.length;
+        this.length = temp.length;
 
         for(let i = 0; i < temp.length; i++){
             if(temp[i] !== "" && temp[i] !== " "){
@@ -166,7 +162,7 @@ class Paragraph {
                 sentPos += temp[i].length;
             }
             else{
-                this.sentNum--;
+                this.length--;
             }
         }
         this.wordNum = this.body.split(" ").length;
@@ -192,7 +188,7 @@ class Paragraph {
     // get fragments in sentences
     getFragNums(){
         let frags = [];
-        for(let i = 0; i < this.sentNum; i++){
+        for(let i = 0; i < this.length; i++){
             frags.push(this.sentences[i].fragNum);
         }
         return frags;
@@ -200,7 +196,7 @@ class Paragraph {
     // return words in sentences
     getSentenceLengths(){
         let sentWords = [];
-        for(let i = 0; i < this.sentNum; i++){
+        for(let i = 0; i < this.length; i++){
             sentWords.push(this.sentences[i].length);
         }
         return sentWords;
@@ -229,6 +225,9 @@ class Sentence{
         this.pos = pos;
         this.endPos = pos + this.content.length;
         let fragPos = pos;
+        if(content.charAt(0) == " "){
+            fragPos++;
+        }
         for(let i = 0; i < temp.length; i++){
             let posInContent = this.content.search(temp[i]);
             let punc = (this.content.charAt(posInContent + temp[i].length));
@@ -260,9 +259,12 @@ class SentenceFragment{
         this.pos = pos;
         this.endPos = pos + content.length;
         let wordPos = pos;
+        if(content.charAt(0) == " "){
+            wordPos++;
+        }
         for(let i = 0; i < temp.length; i++){
             this.words[i] = new Word(temp[i] + " ", wordPos);
-            wordPos += temp[i].length;
+            wordPos += this.words[i].length;
         }
         this.length = temp.length;
     }
@@ -274,6 +276,7 @@ class SentenceFragment{
 class Word{
     constructor(word, pos){
         this.word = word;
+        this.content = word.replace(/[!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]/g, '');
         this.length = word.length;
         this.pos = pos;
         this.endPos = pos + this.length;
@@ -362,7 +365,39 @@ function addColors(value, doc, highlightBy){
         switch(highlightBy){
             case "paragraph": 
                 // TODO
-                analysis = doc.paragraphs;
+                analysis = "";
+                let color = '<mark style="background-color: ';
+                let cur = doc.paragraphs[i];
+                let sentLength = cur.length;
+                switch(sentLength){
+                    case 0: case 1: case 2: case 3: case 4: case 5:
+                        color += "rgb(213, 236, 184)";
+                        break;
+                    case 6: case 7: case 8:
+                        color += "rgb(184, 236, 206)";
+                        break;
+                    case 9: case 10: case 11:
+                        color += "rgb(184, 236, 235)";
+                        break;
+                    case 12: case 13: case 14:
+                        color += "rgb(184, 204, 236)";
+                        break;
+                    case 15: case 16: case 17:
+                        color += "rgb(189, 184, 236)";
+                        break;
+                    case 18: case 19: case 20:
+                        color += "rgb(214, 184, 236)";
+                        break;
+                    default:
+                        color += "rgb(248, 171, 255)";
+                }
+                color += ';">';
+                // add to start of sentence
+                let start = cur.pos + offset;
+                let end = cur.endPos + offset - 1;
+                let sent = value.substring(start, end);
+                para += color + sent + "</mark>";
+                para += "</div>";
                 break;
             case "sentence":
                 analysis = doc.paragraphs[i].sentences;
@@ -374,6 +409,7 @@ function addColors(value, doc, highlightBy){
                 analysis = doc.paragraphs[i].getWords();
                 break;
         }
+        // console.log(`${analysis}`);
         for(let n = 0; n < analysis.length; n++){
             let color = '<mark style="background-color: ';
             let cur = analysis[n];
@@ -405,7 +441,12 @@ function addColors(value, doc, highlightBy){
             let start = cur.pos + offset;
             let end = cur.endPos + offset - 1;
             let sent = value.substring(start, end);
-            para += color + sent + "</mark>" + value.charAt(end);
+            // console.log(`start: ${start} end: ${end} offset: ${offset}`);
+            // console.log(`value: -${value}- sent: -${sent}-`);
+            if(value.charAt(end) == "." || value.charAt(end) == " ")
+                para += color + sent + "</mark>" + value.charAt(end);
+            else 
+                para += color + sent + "</mark>";
             //offset += 59;
         }
         para += "</div>";
@@ -467,24 +508,26 @@ function findDup(doc, prox){
     
     let count = 0;
     let dict = {};
+    let offset = 0;
     // maintain pos of words? in dict, have array of all pos
     //console.log("FIND DUP: " + doc.paragraphs);
     for(let i = 0; i < doc.paraNum; i++){
-        for(let n = 0; n < doc.paragraphs[i].sentNum; n++){
+        for(let n = 0; n < doc.paragraphs[i].length; n++){
             count++;
             let words = doc.paragraphs[i].sentences[n].getWords();
             for(let h = 0; h < words.length; h++){
                 let word = words[h];
-                if(dict.hasOwnProperty(word.word)){
-                    dict[word.word].push(word); // words[h].stems[0]
+                if(dict.hasOwnProperty(word.content)){
+                    dict[word.content].push(word); // words[h].stems[0]
                 }
                 else{
                     let arr = [word];
-                    dict[word.word] = arr;
+                    dict[word.content] = arr;
                 }
             }
         }
     }
+    // problem: offset doesn't apply to words before
     let value = doc.body;
     for(let key in dict){
         let dupes = dict[key];
@@ -492,8 +535,8 @@ function findDup(doc, prox){
             delete dict[key];
             continue;
         }
+        //console.log(`dupes: ${dupes}`)
 
-        let offset = 0;
         for(let i = 0; i < dupes.length - 1; i++){
             let dupe1 = dupes[i];
             let dupe2 = dupes[i + 1];
@@ -505,6 +548,8 @@ function findDup(doc, prox){
                 let before = value.substring(0, start);
                 let sent = value.substring(start, end);
                 let after = value.substring(end);
+                //console.log(`pos: start ${start} and end ${end} with offset ${offset}`);
+                //console.log(`before: ${before} sent: ${sent} and after: ${after}`);
                 value = before + "<u>" + sent + "</u>" + after;
                 offset += 7;
 
@@ -513,6 +558,8 @@ function findDup(doc, prox){
                 before = value.substring(0, start);
                 sent = value.substring(start, end);
                 after = value.substring(end);
+                //console.log(`pos: start ${start} and end ${end} with offset ${offset}`);
+                //console.log(`before: ${before} sent: ${sent} and after: ${after}`);
                 value = before + "<u>" + sent + "</u>" + after;
                 offset += 7;
             }

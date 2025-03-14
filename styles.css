@@ -77,7 +77,6 @@
     }
     .active {
         background-color: rgb(204, 229, 237);
-        padding-top: 10px;
     }
     #submit {
         padding: 5px 10px;
