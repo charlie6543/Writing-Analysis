@@ -2,12 +2,11 @@
 BUGS:
 when re-analyzing, words/letters get eaten
 
-also no paragraphs for word dupes
-
 PLAN:
-FIX DUPES
-fix pos/analysis buttons
+change color variation so it makes more sense for things like paragraphs
+
 add settings + buttons to change analysis
+fix bugs when re-analyzing
 
 word graphs
 more graphs
@@ -277,6 +276,7 @@ class Word{
     constructor(word, pos){
         this.word = word;
         this.content = word.replace(/[!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]/g, '');
+        this.content = this.content.replace(" ", "");
         this.length = word.length;
         this.pos = pos;
         this.endPos = pos + this.length;
@@ -499,6 +499,13 @@ function updateChart(chart, data){
     chart.update();
 }
 
+let colors = ['rgb(213, 236, 184)', 'rgb(184, 236, 206)', 
+    'rgb(184, 236, 235)', 'rgb(184, 204, 236)', 
+    'rgb(189, 184, 236)', 'rgb(214, 184, 236)', 
+    'rgb(248, 171, 255)', 'rgb(252, 161, 228)',
+    'rgb(237, 155, 182)', 'rgb(245, 167, 168)',
+    'rgb(245, 187, 146)', 'rgb(245, 222, 146)',
+    'rgb(232, 245, 146)' ];
 function findDup(doc, prox){
     // look for duplicates within prox
     // maintain dict of words
@@ -527,48 +534,68 @@ function findDup(doc, prox){
             }
         }
     }
-    // problem: offset doesn't apply to words before
-    let value = doc.body;
+
+    // go through dict and sort in order of pos
+    let posDict = {};
+    let colorI = 0;
     for(let key in dict){
         let dupes = dict[key];
         if(dupes.length <= 1){
             delete dict[key];
             continue;
         }
-        //console.log(`dupes: ${dupes}`)
-
         for(let i = 0; i < dupes.length - 1; i++){
             let dupe1 = dupes[i];
             let dupe2 = dupes[i + 1];
-            //console.log(`dupe1: ${dupe1} dupe2: ${dupe2} diff: ${dupe2.pos - dupe1.endPos} while prox=${prox}`);
             if(dupe2.pos - dupe1.endPos <= prox){
-                // add to start of sentence
-                let start = dupe1.pos + offset;
-                let end = dupe1.endPos + offset;
-                let before = value.substring(0, start);
-                let sent = value.substring(start, end);
-                let after = value.substring(end);
-                //console.log(`pos: start ${start} and end ${end} with offset ${offset}`);
-                //console.log(`before: ${before} sent: ${sent} and after: ${after}`);
-                value = before + "<u>" + sent + "</u>" + after;
-                offset += 7;
-
-                start = dupe2.pos + offset;
-                end = dupe2.endPos + offset;
-                before = value.substring(0, start);
-                sent = value.substring(start, end);
-                after = value.substring(end);
-                //console.log(`pos: start ${start} and end ${end} with offset ${offset}`);
-                //console.log(`before: ${before} sent: ${sent} and after: ${after}`);
-                value = before + "<u>" + sent + "</u>" + after;
-                offset += 7;
+                posDict[dupe1.pos] = [colors[colorI], dupe1];
+                posDict[dupe2.pos] = [colors[colorI], dupe2];
             }
-            
         }
-        
+        colorI++;
+        if(colorI > colors.length) colorI = colorI % colors.length;
     }
+
+    let value = doc.body;
+    value = value.replace("\n", "");
+    let paraEnds = [];
+    for(let i = 0; i < doc.paragraphs.length; i++){
+        paraEnds.push(doc.paragraphs[i].endPos - 1);
+    }
+    //console.log(paraEnds);
+    let par = 0;
+    for(let key in posDict){
+        let dupe = posDict[key][1];
+        //console.log(`adding underlines for word ${dupe} at pos: ${dupe.pos + offset} and endPos: ${dupe.endPos + offset} while paraend: ${paraEnds[par] + offset}`);
+        if(dupe.pos + offset >= paraEnds[par] + offset){
+            let paraEnd = paraEnds[par] + offset;
+            //console.log(`start: ${dupe.pos + offset} end: ${dupe.endPos + offset} and paraEnd: ${paraEnd}`)
+            let before = value.substring(0, paraEnd);
+            let after = value.substring(paraEnd);
+            //console.log(`before: ${before} and end: ${after}`);
+            value = '<p>' + before + "</p>" + after;
+            offset += 8;
+            //console.log(`start: ${dupe.pos + offset} end: ${dupe.endPos + offset} and paraEnd: ${paraEnds[par] + offset}`)
+            par++;
+        }
+        let start = dupe.pos + offset;
+        let end = dupe.endPos + offset - 1;
+        let before = value.substring(0, start);
+        let sent = value.substring(start, end);
+        let after = value.substring(end);
+        //console.log(`pos: start ${start} and end ${end} with offset ${offset}`);
+        //console.log(`before: ${before} sent: ${sent} and after: ${after}`);
+        
+        let color = '<mark style="background-color: ' + posDict[key][0] + ';">';
+        value = before + color + sent + "</mark>" + after;
+        offset += color.length + 7;
+        //console.log(value);
+
+        /*value = before + "<u>" + sent + "</u>" + after;
+
+        console.log(value);
+        offset += 7;*/
+    }
+
     document.getElementById('editor').innerHTML = value;
-    // iterate thru dict, remove all with only one entry
-    // compare proximity between entries
-    // if prox less than a certain amount, highlihgt
 }
