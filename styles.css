@@ -83,6 +83,10 @@
         background-color: white;
         float: right;
     }
+    #undo {
+        padding: 5px 10px;
+        background-color: white;
+    }
     select {
         background-color: white;
         border-style: none;

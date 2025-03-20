@@ -22,6 +22,10 @@
                 <option value="words">Length of Words</option>
                 <option value="dup">Duplicate words</option>
             </select>
+            <!--<span id="casePicker">
+                <label for="case" id="caseLabel">by intervals of: </label>
+                <input type="number" id="case" name="case" min="0" value="2"></input>
+            </span>-->
             <span id="dupPicker" class="hidden">
                 <label for="prox">Check for duplicate words within</label>
                 <input type="number" id="prox" name="prox" min="0" value="100"></input> <span>characters</span>
@@ -64,6 +68,8 @@
             </div>
         </div>
     </section>
+
+    <button id="undo" onclick="undo()">Undo</button>
     
 
     <script>
